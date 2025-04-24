@@ -39,7 +39,6 @@ const formattedContent = ref('')
 const rawContent = ref('')
 const loading = ref(false)
 const error = ref('')
-const showDebug = ref(false)
 let eventSource: EventSource | null = null
 
 // 清除事件源的函数
@@ -203,11 +202,6 @@ const copyPlainText = async () => {
   }
 }
 
-// 切换调试视图
-const toggleDebug = () => {
-  showDebug.value = !showDebug.value
-}
-
 // 组件卸载时清理
 onUnmounted(() => {
   cleanupEventSource()
@@ -227,28 +221,12 @@ onUnmounted(() => {
       {{ error }}
     </div>
 
-    <!-- 调试区域 -->
-    <div v-if="showDebug && rawContent" class="mb-4 p-3 bg-gray-100 border rounded text-xs">
-      <h4 class="font-bold mb-1">调试信息（原始内容）：</h4>
-      <div class="overflow-auto max-h-40">
-        <pre>{{ rawContent }}</pre>
-      </div>
-    </div>
+
 
     <div class="markdown-content" v-html="formattedContent"></div>
 
     <!-- 按钮容器 -->
     <div v-if="!loading && rawContent" class="fixed bottom-6 right-6 flex flex-col gap-2">
-      <!-- 调试按钮 -->
-      <button @click="toggleDebug"
-        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-full shadow-lg text-sm transition cursor-pointer flex items-center"
-        title="显示/隐藏原始文本，用于调试">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-        </svg>
-        {{ showDebug ? '隐藏原文' : '查看原文' }}
-      </button>
-      
       <!-- 复制Markdown格式内容 -->
       <button @click="copyContent"
         class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg text-sm transition cursor-pointer flex items-center"

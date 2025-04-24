@@ -34,3 +34,7 @@ catalogs:
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
+catalog:
+  '@ant-design-vue/nuxt': 1.4.6
+  ant-design-vue: '>=4'
+  marked: ^15.0.9
