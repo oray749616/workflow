@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     '@vite-pwa/nuxt',
     '@nuxt/eslint',
-    '@ant-design-vue/nuxt',
+    'arco-design-nuxt-module',
   ],
 
   devtools: {

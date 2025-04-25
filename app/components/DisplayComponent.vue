@@ -1,24 +1,14 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { marked } from 'marked'
-import { message } from 'ant-design-vue'
+import { Message } from '@arco-design/web-vue'
+import type { NewsFormDataObject } from '@/types/newsFormDataObject'
 
 // 配置marked选项，禁用可能导致数字解析问题的功能
 marked.setOptions({
   gfm: false, // 禁用GitHub风格Markdown
   pedantic: false
 })
-
-interface FormDataObject {
-  model_id: string;
-  text: string;
-  channels: string;
-  direction: string;
-  requirements: string;
-  num: string;
-  seo_keywords: string;
-  scope: string;
-}
 
 // 定义事件
 const emit = defineEmits(['generation-complete'])
@@ -31,7 +21,7 @@ const props = defineProps<{
   },
   streamUrl?: string,
   isStreaming?: boolean,
-  formData?: FormDataObject
+  formData?: NewsFormDataObject
 }>()
 
 // 状态变量
@@ -50,7 +40,7 @@ const cleanupEventSource = () => {
 }
 
 // 自定义创建EventSource的函数，使用POST方法
-const createEventSourceWithPost = async (url: string, formData: FormDataObject) => {
+const createEventSourceWithPost = async (url: string, formData: NewsFormDataObject) => {
   try {
     // 转换为FormData
     const formDataObj = new FormData()
@@ -140,7 +130,7 @@ const createEventSourceWithPost = async (url: string, formData: FormDataObject) 
 const preprocessContent = (content: string): string => {
   // 对可能有问题的年份数字添加保护
   // 匹配四位数字后跟"年"字的模式，用HTML实体替换数字
-  return content.replace(/(\d{4})年/g, (match, year) => {
+  return content.replace(/(\d{4})年/g, (year) => {
     // console.log(`捕获年份: ${year}年`)
     return `${year}年`
   })
@@ -163,7 +153,7 @@ watch(() => [props.streamUrl, props.isStreaming, props.formData], async (newValu
   
   const newUrl = newValues[0] as string | undefined
   const isStreaming = newValues[1] as boolean | undefined
-  const formData = newValues[2] as FormDataObject | undefined
+  const formData = newValues[2] as NewsFormDataObject | undefined
   
   if (newUrl && isStreaming && formData) {
     // 重置状态
@@ -181,9 +171,9 @@ watch(() => [props.streamUrl, props.isStreaming, props.formData], async (newValu
 const copyContent = async () => {
   try {
     await navigator.clipboard.writeText(rawContent.value)
-    message.success('内容已复制到剪贴板')
+    Message.success('内容已复制到剪贴板')
   } catch (e) {
-    message.error('复制失败，请重试')
+    Message.error('复制失败，请重试')
   }
 }
 
@@ -196,9 +186,9 @@ const copyPlainText = async () => {
     const plainText = tempDiv.textContent || tempDiv.innerText || ''
     
     await navigator.clipboard.writeText(plainText)
-    message.success('纯文本内容已复制到剪贴板')
+    Message.success('纯文本内容已复制到剪贴板')
   } catch (e) {
-    message.error('复制失败，请重试')
+    Message.error('复制失败，请重试')
   }
 }
 
@@ -220,8 +210,6 @@ onUnmounted(() => {
     <div v-if="error" class="text-red-500 mb-4">
       {{ error }}
     </div>
-
-
 
     <div class="markdown-content" v-html="formattedContent"></div>
 
@@ -262,7 +250,7 @@ onUnmounted(() => {
 .markdown-content {
   text-align: left;
   white-space: pre-wrap;
-  padding-bottom: 140px; /* 为三个悬浮按钮留出空间 */
+  padding-bottom: 140px;
   
   /* Markdown内容样式 */
   h1, h2, h3, h4, h5, h6 {
