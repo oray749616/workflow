@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 const emit = defineEmits(['response-updated', 'stream-started'])
 
+// 表单引用
+const formRef = ref<any>(null)
+
 // 表单数据模型
 const formState = ref({
   model_id: 'deepseek-v3-250324',
@@ -23,6 +26,14 @@ const handleSubmit = async () => {
   if (submitting.value) return
 
   try {
+    // 先进行表单验证
+    if (formRef.value) {
+      await formRef.value.validate()
+    } else {
+      message.error('表单初始化错误')
+      return
+    }
+    
     submitting.value = true
     
     // 准备数据对象
@@ -43,7 +54,7 @@ const handleSubmit = async () => {
       
       // 通知父组件开始流式传输
       emit('stream-started', {
-        streamUrl: 'http://127.0.0.1:8000/api/deepseek/streamChat',
+        streamUrl: '/api/deepseek/streamChat',
         isStreaming: true,
         formData: formData
       })
@@ -54,7 +65,7 @@ const handleSubmit = async () => {
         formDataObj.append(key, value)
       }
       
-      const response = await $fetch('http://127.0.0.1:8000/api/deepseek/chat', {
+      const response = await $fetch('/api/deepseek/chat', {
         method: 'POST',
         body: formDataObj
       })
@@ -66,9 +77,16 @@ const handleSubmit = async () => {
       emit('response-updated', response)
       submitting.value = false
     }
-  } catch (error) {
-    console.error('提交失败:', error)
-    message.error('提交失败')
+  } catch (error: any) {
+    console.error('操作失败:', error)
+    
+    // 检查是否为表单验证错误
+    if (error && typeof error === 'object' && 'errorFields' in error) {
+      message.error('请填写完整的表单信息')
+    } else {
+      message.error('提交失败')
+    }
+    
     submitting.value = false
   }
 }
@@ -86,7 +104,7 @@ defineExpose({
 
 <template>
   <div>
-    <a-form :model="formState" layout="vertical" class="max-w-2xl mx-auto">
+    <a-form ref="formRef" :model="formState" layout="vertical" class="max-w-2xl mx-auto">
       <!-- Model ID -->
       <a-form-item label="选择模型" name="model_id" :rules="[{ required: true, message: '请选择模型' }]" class="mb-4">
         <a-select v-model:value="formState.model_id" placeholder="请选择模型">
